@@ -1,1 +1,18 @@
-./data/users.db
+# Archivos binarios generados
+main
+
+# Dependencias descargadas
+/go/pkg/
+/go/bin/
+
+# Archivos de Docker
+docker-compose.override.yml
+
+# Bases de datos locales
+/data/*.db
+
+# Configuración del editor o sistema operativo
+*.log
+*.tmp
+*.swp
+.DS_Store
