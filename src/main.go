@@ -10,7 +10,7 @@ import (
 func main() {
     // Inicializa la base de datos
     database.InitDB()
-    defer database.DB.Close() // Cierra la conexión al salir
+    defer database.DB.Close() // Solo se cierra cuando la aplicación termina
 
     fmt.Println("Servidor escuchando en el puerto 8080...")
 

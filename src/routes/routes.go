@@ -6,9 +6,16 @@ import (
 )
 
 func HandleUsuarios(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodGet {
+    switch r.Method {
+    case http.MethodGet:
         controllers.GetUsuarios(w, r)
-    } else {
+    case http.MethodPost:
+        controllers.CreateUsuario(w, r)
+    case http.MethodPut:
+        controllers.UpdateUsuario(w, r)
+    case http.MethodDelete:
+        controllers.DeleteUsuario(w, r)
+    default:
         http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
     }
 }
