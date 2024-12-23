@@ -9,7 +9,7 @@ main
 docker-compose.override.yml
 
 # Bases de datos locales
-/data/*.db
+/data/users.db
 
 # Configuración del editor o sistema operativo
 *.log
