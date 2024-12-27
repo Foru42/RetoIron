@@ -5,6 +5,7 @@ import (
     "RetoIronChip/controllers"
 )
 
+// Funcion para las rutas de los metodos GET/CREATE/UPDATE/DELETE
 func HandleUsuarios(w http.ResponseWriter, r *http.Request) {
     switch r.Method {
     case http.MethodGet:

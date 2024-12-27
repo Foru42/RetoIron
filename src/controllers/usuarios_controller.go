@@ -8,7 +8,7 @@ import (
     "RetoIronChip/database"
 )
 
-
+// Funcion para recoger los usuarios
 func GetUsuarios(w http.ResponseWriter, r *http.Request) {
     // Obtiene la conexión a la base de datos
     db := database.GetDB()
@@ -51,6 +51,7 @@ func isValidText(text string, maxLength int) bool {
     return len(text) > 0 && len(text) <= maxLength
 }
 
+// Funcion para crear un usuario
 func CreateUsuario(w http.ResponseWriter, r *http.Request) {
     var usuario models.Usuario
     if err := json.NewDecoder(r.Body).Decode(&usuario); err != nil {
@@ -74,6 +75,8 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request) {
 
     db := database.GetDB()
 
+
+    // Inserta el usuario en la base de datos
     query := `INSERT INTO usuarios (name, surname, email) VALUES (?, ?, ?)`
     result, err := db.Exec(query, usuario.Name, usuario.Surname, usuario.Email)
     if err != nil {
@@ -81,14 +84,16 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    id, _ := result.LastInsertId()
+    id, _ := result.LastInsertId() //Id del usuario
     usuario.ID = int(id)
 
+    // Devuelve el usuario creado como respuesta JSON
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusCreated)
     json.NewEncoder(w).Encode(usuario)
 }
 
+// Funcion para actualizar el usuario
 func UpdateUsuario(w http.ResponseWriter, r *http.Request) {
     var usuario models.Usuario
     if err := json.NewDecoder(r.Body).Decode(&usuario); err != nil {
@@ -115,18 +120,22 @@ func UpdateUsuario(w http.ResponseWriter, r *http.Request) {
     }
 
     db := database.GetDB()
-
+    // Actualiza el usuario en la base de datos
     query := `UPDATE usuarios SET name = ?, surname = ?, email = ? WHERE id = ?`
     _, err := db.Exec(query, usuario.Name, usuario.Surname, usuario.Email, usuario.ID)
+    // Manejo de errores
     if err != nil {
         http.Error(w, "Error al actualizar el usuario", http.StatusInternalServerError)
         return
     }
-
+    // Devuelve un mensaje de éxito
     w.WriteHeader(http.StatusOK)
-    w.Write([]byte("Usuario actualizado correctamente"))
+    w.Write([]byte("Usuario actualizado correctamente\n"))
 }
+
+// Funcion para eliminar usuarios
 func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
+    // Obtener id
     id := r.URL.Query().Get("id")
     if id == "" {
         http.Error(w, "ID requerido", http.StatusBadRequest)
@@ -135,7 +144,7 @@ func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
 
     db := database.GetDB()
 
-
+    // Elimina el usuario de la base de datos
     query := `DELETE FROM usuarios WHERE id = ?`
     _, err := db.Exec(query, id)
     if err != nil {
@@ -143,6 +152,7 @@ func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // Devuelve un mensaje de éxito
     w.WriteHeader(http.StatusOK)
-    w.Write([]byte("Usuario eliminado correctamente"))
+    w.Write([]byte("Usuario eliminado correctamente\n"))
 }
