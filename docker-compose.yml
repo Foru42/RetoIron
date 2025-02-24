@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -9,8 +7,8 @@ services:
       - mongo
     ports:
       - "8080:8080"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017 
+    env_file:
+      - .env  # Asegúrate de que .env esté en el mismo directorio que docker-compose.yml
     networks:
       - app-network
 
@@ -21,7 +19,7 @@ services:
     networks:
       - app-network
     volumes:
-      - mongo-data:/data/db  
+      - mongo-data:/data/db
 
 networks:
   app-network:
@@ -29,4 +27,4 @@ networks:
 
 volumes:
   mongo-data:
-    driver: local 
+    driver: local

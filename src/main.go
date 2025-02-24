@@ -4,6 +4,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"RetoIronChip/database"
@@ -15,21 +17,27 @@ import (
 )
 
 func main() {
+
+	port := os.Getenv("PORT")
+
 	var db database.DB
-	db.InitDB() // Inicializar la conexión a MongoDB
+	db.InitDB()
 	defer db.CloseDB()
 
-	rate := limiter.Rate{Period: 1 * time.Second, Limit: 10}
+	limit := os.Getenv("RATE_LIMIT")
+	limitInt, _ := strconv.Atoi(limit)
+
+	rate := limiter.Rate{Period: 1 * time.Second, Limit: int64(limitInt)}
 	store := memory.NewStore()
 	instance := limiter.New(store, rate)
 	rateLimiterMiddleware := stdlib.NewMiddleware(instance)
 
-	fmt.Println("Servidor escuchando en el puerto 8080...")
+	fmt.Printf("Servidor escuchando en el puerto %s...\n", port)
 	http.Handle("/usuarios", rateLimiterMiddleware.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		routes.HandleUsuarios(w, r, &db)
 	})))
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		fmt.Println("Error al iniciar el servidor:", err)
 	}
 }

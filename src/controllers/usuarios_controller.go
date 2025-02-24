@@ -3,10 +3,10 @@ package controllers
 import (
 	"RetoIronChip/database"
 	"RetoIronChip/models"
+	"RetoIronChip/validators"
 	"context"
 	"encoding/json"
 	"net/http"
-	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -44,6 +44,20 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 		return
 	}
 
+	if !validators.IsValidEmail(usuario.Email) {
+		http.Error(w, "Error El email tiene un formato invalido : xxx@xxx.xxx", http.StatusInternalServerError)
+		return
+	}
+
+	if !validators.IsValidText(usuario.Name, 50) {
+		http.Error(w, "El nombre es obligatorio y debe tener menos de 50 caracteres", http.StatusBadRequest)
+		return
+	}
+	if !validators.IsValidText(usuario.Surname, 50) {
+		http.Error(w, "El apellido es obligatorio y debe tener menos de 50 caracteres", http.StatusBadRequest)
+		return
+	}
+
 	usuario.ID = primitive.NewObjectID()
 	_, err := db.UsersCollection.InsertOne(context.Background(), usuario)
 	if err != nil {
@@ -54,18 +68,6 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(usuario)
-}
-
-// Valida que un email sea válido
-func isValidEmail(email string) bool {
-	regex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	re := regexp.MustCompile(regex)
-	return re.MatchString(email)
-}
-
-// Valida que un texto no esté vacío y no exceda cierta longitud
-func isValidText(text string, maxLength int) bool {
-	return len(text) > 0 && len(text) <= maxLength
 }
 
 func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {

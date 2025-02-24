@@ -3,8 +3,6 @@ FROM golang:1.21 AS builder
 WORKDIR /app
 COPY ./src . 
 
-# Inicializa el módulo y descarga dependencias
-RUN go mod tidy
 RUN go build -o main .
 
 # Etapa de ejecución

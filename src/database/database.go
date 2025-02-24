@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,7 +21,11 @@ func (db *DB) InitDB() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	// Leer URI y nombre de BD desde las variables de entorno
+	mongoURI := os.Getenv("MONGO_URI")
+	dbName := os.Getenv("DB_NAME")
+
+	clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatalf("Error al conectar con MongoDB: %v", err)
@@ -33,7 +38,7 @@ func (db *DB) InitDB() {
 
 	fmt.Println("Conectado a MongoDB")
 	db.Client = client
-	db.UsersCollection = client.Database("RetoIronChip").Collection("usuarios")
+	db.UsersCollection = client.Database(dbName).Collection("usuarios")
 }
 
 func (db *DB) CloseDB() {
