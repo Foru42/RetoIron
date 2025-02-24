@@ -81,6 +81,20 @@ func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	// Filtrar por el nombre del usuario
 	filter := bson.M{"name": usuario.Name}
 
+	if !validators.IsValidEmail(usuario.Email) {
+		utils.RespondWithError(w, http.StatusBadRequest, "El email tiene un formato inválido: xxx@xxx.xxx")
+		return
+	}
+
+	if !validators.IsValidText(usuario.Name, 50) {
+		utils.RespondWithError(w, http.StatusBadRequest, "El nombre es obligatorio y debe tener menos de 50 caracteres")
+		return
+	}
+	if !validators.IsValidText(usuario.Surname, 50) {
+		utils.RespondWithError(w, http.StatusBadRequest, "El apellido es obligatorio y debe tener menos de 50 caracteres")
+		return
+	}
+
 	// Verificar si el usuario existe
 	count, err := db.UsersCollection.CountDocuments(context.Background(), filter)
 	if err != nil {
@@ -92,7 +106,6 @@ func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 		utils.RespondWithError(w, http.StatusBadRequest, "Usuario Inexistente")
 		return
 	}
-
 	// Realizar el update
 	update := bson.M{"$set": bson.M{
 		"name":    usuario.Name,

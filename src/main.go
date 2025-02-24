@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -26,6 +27,9 @@ func main() {
 
 	limit := os.Getenv("RATE_LIMIT")
 	limitInt, _ := strconv.Atoi(limit)
+	if port == "" || limit == "" {
+		log.Fatal("Faltan variables de entorno necesarias")
+	}
 
 	rate := limiter.Rate{Period: 1 * time.Second, Limit: int64(limitInt)}
 	store := memory.NewStore()

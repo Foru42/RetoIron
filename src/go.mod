@@ -3,7 +3,6 @@ module RetoIronChip
 go 1.18
 
 require (
-	github.com/joho/godotenv v1.5.1
 	github.com/ulule/limiter/v3 v3.11.2
 	go.mongodb.org/mongo-driver v1.17.2
 )

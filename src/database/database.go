@@ -25,15 +25,19 @@ func (db *DB) InitDB() {
 	mongoURI := os.Getenv("MONGO_URI")
 	dbName := os.Getenv("DB_NAME")
 
+	if mongoURI == "" || dbName == "" {
+		log.Fatal("Faltan variables de entorno necesarias")
+	}
+
 	clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatalf("Error al conectar con MongoDB: %v", err)
+		log.Fatalf("Error al conectar con la base de datos: %v", err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatalf("No se pudo hacer ping a MongoDB: %v", err)
+		log.Fatalf("No se pudo hacer ping a la base de datos: %v", err)
 	}
 
 	fmt.Println("Conectado a MongoDB")
