@@ -3,6 +3,7 @@ package controllers
 import (
 	"RetoIronChip/database"
 	"RetoIronChip/models"
+	"RetoIronChip/utils"
 	"RetoIronChip/validators"
 	"context"
 	"encoding/json"
@@ -12,14 +13,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Funcion para recoger los usuarios
+// Obtener todos los usuarios
 func GetUsuarios(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	var usuarios []models.Usuario
 	ctx := context.Background()
 
 	cursor, err := db.UsersCollection.Find(ctx, bson.M{})
 	if err != nil {
-		http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error al obtener usuarios")
 		return
 	}
 	defer cursor.Close(ctx)
@@ -27,54 +28,53 @@ func GetUsuarios(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	for cursor.Next(ctx) {
 		var usuario models.Usuario
 		if err := cursor.Decode(&usuario); err != nil {
-			http.Error(w, "Error al leer los datos", http.StatusInternalServerError)
+			utils.RespondWithError(w, http.StatusInternalServerError, "Error al leer los datos")
 			return
 		}
 		usuarios = append(usuarios, usuario)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(usuarios)
+	utils.RespondWithJSON(w, http.StatusOK, usuarios)
 }
 
+// Crear usuario
 func CreateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	var usuario models.Usuario
 	if err := json.NewDecoder(r.Body).Decode(&usuario); err != nil {
-		http.Error(w, "Datos inválidos: formato JSON incorrecto", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "Datos inválidos: formato JSON incorrecto")
 		return
 	}
 
 	if !validators.IsValidEmail(usuario.Email) {
-		http.Error(w, "Error El email tiene un formato invalido : xxx@xxx.xxx", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusBadRequest, "El email tiene un formato inválido: xxx@xxx.xxx")
 		return
 	}
 
 	if !validators.IsValidText(usuario.Name, 50) {
-		http.Error(w, "El nombre es obligatorio y debe tener menos de 50 caracteres", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "El nombre es obligatorio y debe tener menos de 50 caracteres")
 		return
 	}
 	if !validators.IsValidText(usuario.Surname, 50) {
-		http.Error(w, "El apellido es obligatorio y debe tener menos de 50 caracteres", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "El apellido es obligatorio y debe tener menos de 50 caracteres")
 		return
 	}
 
 	usuario.ID = primitive.NewObjectID()
 	_, err := db.UsersCollection.InsertOne(context.Background(), usuario)
 	if err != nil {
-		http.Error(w, "Error al crear el usuario", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error al crear el usuario")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(usuario)
+	utils.RespondWithJSON(w, http.StatusCreated, usuario)
 }
 
+// Actualizar usuario
 func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	var usuario models.Usuario
 
 	if err := json.NewDecoder(r.Body).Decode(&usuario); err != nil {
-		http.Error(w, "Datos inválidos: formato JSON incorrecto", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "Datos invalidos, formato Json invalido")
 		return
 	}
 
@@ -84,12 +84,12 @@ func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	// Verificar si el usuario existe
 	count, err := db.UsersCollection.CountDocuments(context.Background(), filter)
 	if err != nil {
-		http.Error(w, "Error al verificar la existencia del usuario", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusBadRequest, "Erros al verificar la existencia del usuario")
 		return
 	}
 
 	if count == 0 {
-		http.Error(w, "Usuario no existe", http.StatusNotFound)
+		utils.RespondWithError(w, http.StatusBadRequest, "Usuario Inexistente")
 		return
 	}
 
@@ -102,12 +102,12 @@ func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 
 	result, err := db.UsersCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		http.Error(w, "Error al actualizar usuario", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusBadRequest, "Error al actualizar usuario")
 		return
 	}
 
 	if result.MatchedCount == 0 {
-		http.Error(w, "No se pudo actualizar el usuario", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusBadRequest, "No se pudo actualizar el usuario")
 		return
 	}
 
@@ -115,11 +115,12 @@ func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	w.Write([]byte("Usuario actualizado correctamente\n"))
 }
 
+// Borrar usuario
 func DeleteUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	name := r.URL.Query().Get("name")
 
-	if name == "" {
-		http.Error(w, "El nombre del usuario es obligatorio", http.StatusBadRequest)
+	if !validators.IsValidText(name, 50) {
+		utils.RespondWithError(w, http.StatusBadRequest, "El nombre del usuario es obligatorio")
 		return
 	}
 
@@ -129,12 +130,12 @@ func DeleteUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 	// Eliminar el usuario
 	result, err := db.UsersCollection.DeleteOne(context.Background(), filter)
 	if err != nil {
-		http.Error(w, "Error al eliminar usuario", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusBadRequest, "Error al eliminar usuario")
 		return
 	}
 
 	if result.DeletedCount == 0 {
-		http.Error(w, "Usuario no encontrado", http.StatusNotFound)
+		utils.RespondWithError(w, http.StatusBadRequest, "Usuario no encontrado")
 		return
 	}
 
