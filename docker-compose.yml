@@ -5,7 +5,28 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./data:/data
+    depends_on:
+      - mongo
     ports:
       - "8080:8080"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017 
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db  
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local 

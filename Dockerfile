@@ -4,7 +4,6 @@ WORKDIR /app
 COPY ./src . 
 
 # Inicializa el módulo y descarga dependencias
-RUN go mod init RetoIronChip || true
 RUN go mod tidy
 RUN go build -o main .
 

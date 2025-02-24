@@ -56,12 +56,12 @@ curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" 
 
 #### **PUT /usuarios**
 ```bash
-curl -X PUT http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{"id":4, "name":"josul", "surname":"Smith", "email":"john.smith@example.com"}'
+curl -X PUT http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{"name":"josul", "surname":"Smith", "email":"john.smith@example.com"}'
 ```
 
 #### **DELETE /usuarios?id=1**
 ```bash
-curl -X DELETE "http://localhost:8080/usuarios?id=2"
+curl -X DELETE "http://localhost:8080/usuarios?name=josu"
 ```
 
 ---
