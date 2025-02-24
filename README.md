@@ -1,7 +1,7 @@
 # Reto: RESTful API en Golang
 
 ## Descripción del Proyecto
-Este proyecto es una RESTful API desarrollada en **Golang** utilizando el framework **Gin** para la gestión de usuarios. La API permite realizar las operaciones básicas de CRUD (Create, Read, Update, Delete) sobre un modelo de datos `Usuario`, con campos como `name`, `surname`, y `email`. Los datos se almacenan en una base de datos SQLite.
+Este proyecto es una RESTful API desarrollada en **Golang** utilizando el framework **Gin** para la gestión de usuarios. La API permite realizar las operaciones básicas de CRUD (Create, Read, Update, Delete) sobre un modelo de datos `Usuario`, con campos como `name`, `surname`, y `email`. Los datos se almacenan en una base de datos MongoDb.
 
 ### Características principales
 - **Operaciones CRUD completas**:
@@ -11,7 +11,7 @@ Este proyecto es una RESTful API desarrollada en **Golang** utilizando el framew
   - DELETE: Eliminar un usuario mediante su ID.
 - **Rate Limiting**: Limita las solicitudes a 10 por segundo para proteger contra ataques DoS.
 - **Validaciones**: Validación estricta de los datos de entrada (formato de correo electrónico, campos obligatorios, etc...).
-- **Persistencia**: Uso de SQLite para almacenamiento ligero.
+- **Persistencia**: Uso de MongoDb para almacenamiento ligero y seguro.
 - **Contenerización**: Configuración de Docker y Docker Compose para despliegue sencillo.
 
 ---
@@ -74,9 +74,13 @@ RetoIronChip/
 │   ├── routes/            # Definición de rutas
 │   ├── controllers/       # Controladores para cada operación CRUD
 │   ├── models/            # Modelos de datos
-│   ├── database/          # Conexión y configuración de la base de │── data/                  # Almacenamiento de la BDD SQLite
+│   ├── database/          # Conexión y configuración de la base de 
+|   ├── utils/             # Estructura para los errores
+|   ├── validators/        # Validaciones 
 ├── Dockerfile             # Configuración de Docker
 ├── docker-compose.yml     # Configuración de Docker Compose
+├── .gitignore             # Configuración del ignore
+├── .env                   # Configuración de las variables de entorno
 ```
 
 ---
