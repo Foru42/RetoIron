@@ -33,6 +33,21 @@ func (dao *UsuarioDAO) GetUsuarios(ctx context.Context) ([]models.Usuario, error
 	return usuarios, err
 }
 
+func (dao *UsuarioDAO) GetUsuarioId(ctx context.Context, id string) (models.Usuario, error) {
+	var usuario models.Usuario
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return usuario, fmt.Errorf("ID inválido")
+	}
+
+	err = dao.DB.UsersCollection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&usuario)
+	if err != nil {
+		return usuario, fmt.Errorf("usuario no encontrado")
+	}
+
+	return usuario, nil
+}
+
 func (dao *UsuarioDAO) CreateUsuario(ctx context.Context, usuario models.Usuario) error {
 	usuario.ID = primitive.NewObjectID()
 	_, err := dao.DB.UsersCollection.InsertOne(ctx, usuario)

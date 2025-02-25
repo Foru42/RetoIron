@@ -25,6 +25,22 @@ func (service *UsuarioService) GetUsuarios(c *gin.Context) {
 	utils.RespondWithJSON(c, http.StatusOK, usuarios)
 }
 
+func (service *UsuarioService) GetUsuarioId(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		utils.RespondWithError(c, http.StatusBadRequest, "El ID del usuario es obligatorio")
+		return
+	}
+
+	ctx := context.Background()
+	usuario, err := service.DAO.GetUsuarioId(ctx, id)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	utils.RespondWithJSON(c, http.StatusOK, usuario)
+}
+
 func (service *UsuarioService) CreateUsuario(c *gin.Context) {
 	var usuario models.Usuario
 	if err := c.ShouldBindJSON(&usuario); err != nil {
