@@ -3,18 +3,17 @@ package main
 
 import (
 	"fmt"
+	"josu-foruria/src/database"
+	"josu-foruria/src/routes"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"RetoIronChip/database"
-	"RetoIronChip/routes"
-
-	"github.com/ulule/limiter/v3"
-	"github.com/ulule/limiter/v3/drivers/middleware/stdlib"
-	"github.com/ulule/limiter/v3/drivers/store/memory"
+	"github.com/ulule/limiter"
+	"github.com/ulule/limiter/drivers/middleware/stdlib"
+	"github.com/ulule/limiter/drivers/store/memory"
 )
 
 func main() {
@@ -31,7 +30,7 @@ func main() {
 		log.Fatal("Faltan variables de entorno necesarias")
 	}
 
-	rate := limiter.Rate{Period: 1 * time.Second, Limit: int64(limitInt)}
+	rate := limiter.Rate{Period: 5 * time.Second, Limit: int64(limitInt)}
 	store := memory.NewStore()
 	instance := limiter.New(store, rate)
 	rateLimiterMiddleware := stdlib.NewMiddleware(instance)

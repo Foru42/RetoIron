@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"RetoIronChip/database"
-	"RetoIronChip/models"
-	"RetoIronChip/utils"
-	"RetoIronChip/validators"
 	"context"
 	"encoding/json"
+	"josu-foruria/src/database"
+	"josu-foruria/src/models"
+	"josu-foruria/src/utils"
+	"josu-foruria/src/validators"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -54,18 +54,36 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
 		utils.RespondWithError(w, http.StatusBadRequest, "El nombre es obligatorio y debe tener menos de 50 caracteres")
 		return
 	}
+
 	if !validators.IsValidText(usuario.Surname, 50) {
 		utils.RespondWithError(w, http.StatusBadRequest, "El apellido es obligatorio y debe tener menos de 50 caracteres")
 		return
 	}
 
+	// Verificar si ya existe un usuario con el mismo email
+	ctx := context.Background()
+	count, err := db.UsersCollection.CountDocuments(ctx, bson.M{"email": usuario.Email})
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error al verificar el email")
+		return
+	}
+
+	if count > 0 {
+		utils.RespondWithError(w, http.StatusBadRequest, "El email ya está registrado")
+		return
+	}
+
+	// Asignar un ID único al nuevo usuario
 	usuario.ID = primitive.NewObjectID()
-	_, err := db.UsersCollection.InsertOne(context.Background(), usuario)
+
+	// Insertar el nuevo usuario
+	_, err = db.UsersCollection.InsertOne(ctx, usuario)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error al crear el usuario")
 		return
 	}
 
+	// Responder con el usuario creado
 	utils.RespondWithJSON(w, http.StatusCreated, usuario)
 }
 

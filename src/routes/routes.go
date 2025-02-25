@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"RetoIronChip/controllers"
-	"RetoIronChip/database"
+	"josu-foruria/src/controllers"
+	"josu-foruria/src/database"
 	"net/http"
 )
 

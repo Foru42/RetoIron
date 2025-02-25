@@ -1,7 +1,7 @@
 # Etapa de compilación
 FROM golang:1.21 AS builder
 WORKDIR /app
-COPY ./src . 
+COPY . . 
 
 RUN go build -o main .
 
