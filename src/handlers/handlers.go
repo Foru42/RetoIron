@@ -2,23 +2,66 @@ package handlers
 
 import (
 	"josu-foruria/src/controllers"
-	"josu-foruria/src/dao"
-	"josu-foruria/src/database"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitUserHandlers(r *gin.Engine, db *database.DB) {
+func GetUsuariosHandler(service *controllers.UsuarioService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
+			}
+		}()
 
-	usuarioService := &controllers.UsuarioService{
-		DAO: &dao.UsuarioDAO{
-			DB: db,
-		},
+		service.GetUsuarios(c)
 	}
+}
 
-	r.GET("/usuarios", usuarioService.GetUsuarios)
-	r.GET("/usuarios/:id", usuarioService.GetUsuarioId)
-	r.POST("/usuarios", usuarioService.CreateUsuario)
-	r.PUT("/usuarios", usuarioService.UpdateUsuario)
-	r.DELETE("/usuarios", usuarioService.DeleteUsuario)
+func GetUsuarioByIdHandler(service *controllers.UsuarioService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
+			}
+		}()
+
+		service.GetUsuarioId(c)
+	}
+}
+
+func PostUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
+			}
+		}()
+
+		service.CreateUsuario(c)
+	}
+}
+func PutUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
+			}
+		}()
+
+		service.UpdateUsuario(c)
+	}
+}
+
+func DeleteUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
+			}
+		}()
+
+		service.DeleteUsuario(c)
+	}
 }

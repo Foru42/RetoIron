@@ -50,7 +50,7 @@ func main() {
 
 	r.Use(rateLimiter(limiter))
 
-	routes.HandleUsuarios(r, &db)
+	routes.RoutesUsuarios(r, &db)
 
 	fmt.Printf("Servidor escuchando en el puerto %s...\n", port)
 	if err := r.Run(":" + port); err != nil {
