@@ -1,25 +1,17 @@
 package utils
 
-import (
-	"encoding/json"
-	"net/http"
-)
+import "github.com/gin-gonic/gin"
 
-// ErrorResponse define la estructura para respuestas de error
 type ErrorResponse struct {
 	Message string `json:"Error"`
 }
 
-// RespondWithError envía una respuesta JSON con un mensaje de error
-func RespondWithError(w http.ResponseWriter, code int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(ErrorResponse{Message: message})
+// RespondWithError envía una respuesta JSON con un mensaje de error usando Gin
+func RespondWithError(c *gin.Context, code int, message string) {
+	c.JSON(code, ErrorResponse{Message: message})
 }
 
-// RespondWithJSON envía una respuesta JSON con datos y código HTTP
-func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(payload)
+// RespondWithJSON envía una respuesta JSON con datos y código HTTP usando Gin
+func RespondWithJSON(c *gin.Context, code int, payload interface{}) {
+	c.JSON(code, payload)
 }

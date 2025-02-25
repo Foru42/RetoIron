@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -9,14 +8,29 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
-	"github.com/ulule/limiter"
-	"github.com/ulule/limiter/drivers/middleware/stdlib"
-	"github.com/ulule/limiter/drivers/store/memory"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"golang.org/x/time/rate"
 )
 
+func rateLimiter(limiter *rate.Limiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !limiter.Allow() {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many requests"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error al cargar el archivo .env")
+	}
 
 	port := os.Getenv("PORT")
 
@@ -25,22 +39,21 @@ func main() {
 	defer db.CloseDB()
 
 	limit := os.Getenv("RATE_LIMIT")
-	limitInt, _ := strconv.Atoi(limit)
-	if port == "" || limit == "" {
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil || port == "" || limit == "" {
 		log.Fatal("Faltan variables de entorno necesarias")
 	}
 
-	rate := limiter.Rate{Period: 5 * time.Second, Limit: int64(limitInt)}
-	store := memory.NewStore()
-	instance := limiter.New(store, rate)
-	rateLimiterMiddleware := stdlib.NewMiddleware(instance)
+	limiter := rate.NewLimiter(rate.Limit(limitInt), 5)
+
+	r := gin.Default()
+
+	r.Use(rateLimiter(limiter))
+
+	routes.HandleUsuarios(r, &db)
 
 	fmt.Printf("Servidor escuchando en el puerto %s...\n", port)
-	http.Handle("/usuarios", rateLimiterMiddleware.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		routes.HandleUsuarios(w, r, &db)
-	})))
-
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := r.Run(":" + port); err != nil {
 		fmt.Println("Error al iniciar el servidor:", err)
 	}
 }

@@ -2,174 +2,90 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
-	"josu-foruria/src/database"
+	"josu-foruria/src/dao"
 	"josu-foruria/src/models"
 	"josu-foruria/src/utils"
 	"josu-foruria/src/validators"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/gin-gonic/gin"
 )
 
-// Obtener todos los usuarios
-func GetUsuarios(w http.ResponseWriter, r *http.Request, db *database.DB) {
-	var usuarios []models.Usuario
-	ctx := context.Background()
-
-	cursor, err := db.UsersCollection.Find(ctx, bson.M{})
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error al obtener usuarios")
-		return
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var usuario models.Usuario
-		if err := cursor.Decode(&usuario); err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, "Error al leer los datos")
-			return
-		}
-		usuarios = append(usuarios, usuario)
-	}
-
-	utils.RespondWithJSON(w, http.StatusOK, usuarios)
+type UsuarioService struct {
+	DAO *dao.UsuarioDAO
 }
 
-// Crear usuario
-func CreateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
+func (service *UsuarioService) GetUsuarios(c *gin.Context) {
+	ctx := context.Background()
+	usuarios, err := service.DAO.GetUsuarios(ctx)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusInternalServerError, "Error al obtener usuarios")
+		return
+	}
+	utils.RespondWithJSON(c, http.StatusOK, usuarios)
+}
+
+func (service *UsuarioService) CreateUsuario(c *gin.Context) {
 	var usuario models.Usuario
-	if err := json.NewDecoder(r.Body).Decode(&usuario); err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Datos inválidos: formato JSON incorrecto")
+	if err := c.ShouldBindJSON(&usuario); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: formato JSON incorrecto")
 		return
 	}
 
 	if !validators.IsValidEmail(usuario.Email) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El email tiene un formato inválido: xxx@xxx.xxx")
+		utils.RespondWithError(c, http.StatusBadRequest, "El email tiene un formato inválido")
 		return
 	}
 
-	if !validators.IsValidText(usuario.Name, 50) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El nombre es obligatorio y debe tener menos de 50 caracteres")
+	if !validators.IsValidText(usuario.Name, 50) || !validators.IsValidText(usuario.Surname, 50) {
+		utils.RespondWithError(c, http.StatusBadRequest, "Nombre y apellido deben tener menos de 50 caracteres")
 		return
 	}
 
-	if !validators.IsValidText(usuario.Surname, 50) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El apellido es obligatorio y debe tener menos de 50 caracteres")
-		return
-	}
-
-	// Verificar si ya existe un usuario con el mismo email
 	ctx := context.Background()
-	count, err := db.UsersCollection.CountDocuments(ctx, bson.M{"email": usuario.Email})
+	err := service.DAO.CreateUsuario(ctx, usuario)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error al verificar el email")
+		utils.RespondWithError(c, http.StatusInternalServerError, "Error al crear el usuario")
 		return
 	}
 
-	if count > 0 {
-		utils.RespondWithError(w, http.StatusBadRequest, "El email ya está registrado")
-		return
-	}
-
-	// Asignar un ID único al nuevo usuario
-	usuario.ID = primitive.NewObjectID()
-
-	// Insertar el nuevo usuario
-	_, err = db.UsersCollection.InsertOne(ctx, usuario)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error al crear el usuario")
-		return
-	}
-
-	// Responder con el usuario creado
-	utils.RespondWithJSON(w, http.StatusCreated, usuario)
+	utils.RespondWithJSON(c, http.StatusCreated, usuario)
 }
 
-// Actualizar usuario
-func UpdateUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
+func (service *UsuarioService) UpdateUsuario(c *gin.Context) {
 	var usuario models.Usuario
-
-	if err := json.NewDecoder(r.Body).Decode(&usuario); err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Datos invalidos, formato Json invalido")
+	if err := c.ShouldBindJSON(&usuario); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: formato JSON incorrecto")
 		return
 	}
 
-	// Filtrar por el nombre del usuario
-	filter := bson.M{"name": usuario.Name}
-
-	if !validators.IsValidEmail(usuario.Email) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El email tiene un formato inválido: xxx@xxx.xxx")
+	if !validators.IsValidEmail(usuario.Email) || !validators.IsValidText(usuario.Name, 50) || !validators.IsValidText(usuario.Surname, 50) {
+		utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos")
 		return
 	}
 
-	if !validators.IsValidText(usuario.Name, 50) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El nombre es obligatorio y debe tener menos de 50 caracteres")
-		return
-	}
-	if !validators.IsValidText(usuario.Surname, 50) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El apellido es obligatorio y debe tener menos de 50 caracteres")
-		return
-	}
-
-	// Verificar si el usuario existe
-	count, err := db.UsersCollection.CountDocuments(context.Background(), filter)
+	ctx := context.Background()
+	err := service.DAO.UpdateUsuario(ctx, usuario)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Erros al verificar la existencia del usuario")
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if count == 0 {
-		utils.RespondWithError(w, http.StatusBadRequest, "Usuario Inexistente")
-		return
-	}
-	// Realizar el update
-	update := bson.M{"$set": bson.M{
-		"name":    usuario.Name,
-		"surname": usuario.Surname,
-		"email":   usuario.Email,
-	}}
-
-	result, err := db.UsersCollection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Error al actualizar usuario")
-		return
-	}
-
-	if result.MatchedCount == 0 {
-		utils.RespondWithError(w, http.StatusBadRequest, "No se pudo actualizar el usuario")
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Usuario actualizado correctamente\n"))
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "Usuario actualizado correctamente"})
 }
 
-// Borrar usuario
-func DeleteUsuario(w http.ResponseWriter, r *http.Request, db *database.DB) {
-	name := r.URL.Query().Get("name")
-
+func (service *UsuarioService) DeleteUsuario(c *gin.Context) {
+	name := c.Query("name")
 	if !validators.IsValidText(name, 50) {
-		utils.RespondWithError(w, http.StatusBadRequest, "El nombre del usuario es obligatorio")
+		utils.RespondWithError(c, http.StatusBadRequest, "El nombre del usuario es obligatorio")
 		return
 	}
 
-	// Filtrar por el nombre del usuario
-	filter := bson.M{"name": name}
-
-	// Eliminar el usuario
-	result, err := db.UsersCollection.DeleteOne(context.Background(), filter)
+	ctx := context.Background()
+	err := service.DAO.DeleteUsuario(ctx, name)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Error al eliminar usuario")
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	if result.DeletedCount == 0 {
-		utils.RespondWithError(w, http.StatusBadRequest, "Usuario no encontrado")
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Usuario eliminado correctamente\n"))
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "Usuario eliminado correctamente"})
 }

@@ -2,23 +2,24 @@ package routes
 
 import (
 	"josu-foruria/src/controllers"
+	"josu-foruria/src/dao"
 	"josu-foruria/src/database"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-// Funcion para las rutas de los metodos GET/CREATE/UPDATE/DELETE
-func HandleUsuarios(w http.ResponseWriter, r *http.Request, db *database.DB) {
+func HandleUsuarios(r *gin.Engine, db *database.DB) {
+	usuarioService := &controllers.UsuarioService{
+		DAO: &dao.UsuarioDAO{
+			DB: db,
+		},
+	}
 
-	switch r.Method {
-	case http.MethodGet:
-		controllers.GetUsuarios(w, r, db)
-	case http.MethodPost:
-		controllers.CreateUsuario(w, r, db)
-	case http.MethodPut:
-		controllers.UpdateUsuario(w, r, db)
-	case http.MethodDelete:
-		controllers.DeleteUsuario(w, r, db)
-	default:
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+	usuarios := r.Group("/usuarios")
+	{
+		usuarios.GET("", usuarioService.GetUsuarios)
+		usuarios.POST("", usuarioService.CreateUsuario)
+		usuarios.PUT("", usuarioService.UpdateUsuario)
+		usuarios.DELETE("", usuarioService.DeleteUsuario)
 	}
 }
