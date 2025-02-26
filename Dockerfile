@@ -1,14 +1,20 @@
 # Etapa de compilación
-FROM golang:1.23 AS builder
+FROM golang:1.23-alpine AS builder
 WORKDIR /app
-COPY . . 
 
+# Instalar dependencias necesarias
+RUN apk add --no-cache git
+
+COPY . . 
 RUN go build -o main .
 
 # Etapa de ejecución
-FROM debian:bookworm-slim
+FROM alpine:latest
 WORKDIR /data
+
+# Copiar el binario desde la etapa de compilación
 COPY --from=builder /app/main /usr/local/bin/main
 COPY .env /data/.env
+
 EXPOSE 8080
-CMD ["/usr/local/bin/main"]
+CMD ["sh", "-c", "export $(grep -v '^#' /data/.env | xargs) && /usr/local/bin/main"]
