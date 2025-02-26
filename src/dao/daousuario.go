@@ -48,16 +48,24 @@ func (dao *UsuarioDAO) GetUsuarioId(ctx context.Context, id string) (models.Usua
 	return usuario, nil
 }
 
-func (dao *UsuarioDAO) CreateUsuario(ctx context.Context, usuario models.Usuario) error {
+func (dao *UsuarioDAO) CreateUsuario(ctx context.Context, usuario *models.Usuario) (*models.Usuario, error) {
 	usuario.ID = primitive.NewObjectID()
+
 	_, err := dao.DB.UsersCollection.InsertOne(ctx, usuario)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	return usuario, nil
 }
 
-func (dao *UsuarioDAO) UpdateUsuario(ctx context.Context, usuario models.Usuario) error {
-	count, err := dao.DB.UsersCollection.CountDocuments(ctx, bson.M{"name": usuario.Name})
+func (dao *UsuarioDAO) UpdateUsuario(ctx context.Context, usuario models.Usuario, id string) (*models.Usuario, error) {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("ID inválido")
+	}
+	count, err := dao.DB.UsersCollection.CountDocuments(ctx, bson.M{"_id": objectID})
 	if err != nil || count == 0 {
-		return fmt.Errorf("usuario no encontrado")
+		return nil, fmt.Errorf("usuario no encontrado")
 	}
 	update := bson.M{
 		"$set": bson.M{
@@ -66,16 +74,30 @@ func (dao *UsuarioDAO) UpdateUsuario(ctx context.Context, usuario models.Usuario
 			"email":   usuario.Email,
 		},
 	}
-	_, err = dao.DB.UsersCollection.UpdateOne(ctx, bson.M{"name": usuario.Name}, update)
-	return err
+	_, err = dao.DB.UsersCollection.UpdateOne(ctx, bson.M{"_id": objectID}, update)
+	if err != nil {
+		return nil, err
+	}
+	var updatedUsuario models.Usuario
+	err = dao.DB.UsersCollection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&updatedUsuario)
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedUsuario, nil
 }
 
-func (dao *UsuarioDAO) DeleteUsuario(ctx context.Context, name string) error {
-	count, err := dao.DB.UsersCollection.CountDocuments(ctx, bson.M{"name": name})
+func (dao *UsuarioDAO) DeleteUsuario(ctx context.Context, id string) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("ID inválido")
+	}
+
+	count, err := dao.DB.UsersCollection.CountDocuments(ctx, bson.M{"_id": objectID})
 	if err != nil || count == 0 {
 		return fmt.Errorf("usuario no encontrado")
 	}
 
-	_, err = dao.DB.UsersCollection.DeleteOne(ctx, bson.M{"name": name})
+	_, err = dao.DB.UsersCollection.DeleteOne(ctx, bson.M{"_id": objectID})
 	return err
 }

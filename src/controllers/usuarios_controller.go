@@ -26,24 +26,24 @@ func (service *UsuarioService) GetUsuarioId(ctx context.Context, id string) (*mo
 	return &usuario, nil
 }
 
-func (service *UsuarioService) CreateUsuario(ctx context.Context, usuario models.Usuario) error {
-	err := service.DAO.CreateUsuario(ctx, usuario)
+func (service *UsuarioService) CreateUsuario(ctx context.Context, usuario models.Usuario) (*models.Usuario, error) {
+	usuarioCreado, err := service.DAO.CreateUsuario(ctx, &usuario)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return usuarioCreado, nil
 }
 
-func (service *UsuarioService) UpdateUsuario(ctx context.Context, usuario models.Usuario) error {
-	err := service.DAO.UpdateUsuario(ctx, usuario)
+func (service *UsuarioService) UpdateUsuario(ctx context.Context, usuario models.Usuario, id string) (*models.Usuario, error) {
+	updatedUsuario, err := service.DAO.UpdateUsuario(ctx, usuario, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return updatedUsuario, nil
 }
 
-func (service *UsuarioService) DeleteUsuario(ctx context.Context, name string) error {
-	err := service.DAO.DeleteUsuario(ctx, name)
+func (service *UsuarioService) DeleteUsuario(ctx context.Context, id string) error {
+	err := service.DAO.DeleteUsuario(ctx, id)
 	if err != nil {
 		return err
 	}

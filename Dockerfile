@@ -11,4 +11,4 @@ WORKDIR /data
 COPY --from=builder /app/main /usr/local/bin/main
 COPY .env /data/.env
 EXPOSE 8080
-CMD ["sh", "-c", "export $(grep -v '^#' /data/.env | xargs) && /usr/local/bin/main"]
+CMD ["/usr/local/bin/main"]

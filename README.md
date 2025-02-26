@@ -48,6 +48,10 @@ Puedes interactuar con la API utilizando herramientas como `curl`, Postman, o cu
 ```bash
 curl -X GET http://localhost:8080/usuarios
 ```
+#### **GETbyID /usuarios**
+```bash
+curl -X GET http://localhost:8080/usuarios/id
+```
 
 #### **POST /usuarios**
 ```bash
@@ -56,12 +60,13 @@ curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" 
 
 #### **PUT /usuarios**
 ```bash
-curl -X PUT http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{"name":"josul", "surname":"Smith", "email":"john.smith@example.com"}'
+curl -X PUT http://localhost:8080/usuarios/update/id -H "Content-Type: application/json" -d '{"name":"josul", "surname":"Smith", "email":"john.smith@example.com"}'
 ```
 
 #### **DELETE /usuarios?id=1**
 ```bash
-curl -X DELETE "http://localhost:8080/usuarios?name=josu"
+curl -X DELETE http://localhost:8080/usuarios/delete/id
+
 ```
 
 ---

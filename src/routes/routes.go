@@ -19,6 +19,6 @@ func RoutesUsuarios(r *gin.Engine, db *database.DB) {
 	r.GET("/usuarios", handlers.GetUsuariosHandler(usuarioService))
 	r.GET("/usuarios/:id", handlers.GetUsuarioByIdHandler(usuarioService))
 	r.POST("/usuarios", handlers.PostUsuario(usuarioService))
-	r.PUT("/usuarios", handlers.PutUsuario(usuarioService))
-	r.DELETE("/usuarios", handlers.DeleteUsuario(usuarioService))
+	r.PUT("/usuarios/update/:id", handlers.PutUsuario(usuarioService))
+	r.DELETE("/usuarios/delete/:id", handlers.DeleteUsuario(usuarioService))
 }

@@ -62,7 +62,7 @@ func PostUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 			}
 		}()
 
-		var usuario models.Usuario
+		var usuario *models.Usuario
 		if err := c.ShouldBindJSON(&usuario); err != nil {
 			utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: formato JSON incorrecto")
 			return
@@ -79,7 +79,7 @@ func PostUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 		}
 
 		ctx := context.Background()
-		err := service.CreateUsuario(ctx, usuario)
+		usuario, err := service.CreateUsuario(ctx, *usuario)
 		if err != nil {
 			utils.RespondWithError(c, http.StatusInternalServerError, "Error al crear el usuario")
 			return
@@ -97,6 +97,11 @@ func PutUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
 			}
 		}()
+		id := c.Param("id")
+		if id == "" {
+			utils.RespondWithError(c, http.StatusBadRequest, "El ID del usuario es obligatorio")
+			return
+		}
 
 		if err := c.ShouldBindJSON(&usuario); err != nil {
 			utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: formato JSON incorrecto")
@@ -107,17 +112,17 @@ func PutUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 			utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos")
 			return
 		}
+
 		ctx := context.Background()
-		err := service.DAO.UpdateUsuario(ctx, usuario)
+		updatedUsuario, err := service.UpdateUsuario(ctx, usuario, id)
 		if err != nil {
-			utils.RespondWithError(c, http.StatusInternalServerError, "Error al actualizar el usuario o usuario no encontrado")
+			utils.RespondWithError(c, http.StatusNotFound, "Usuario no encontrado")
 			return
 		}
 
-		utils.RespondWithJSON(c, http.StatusCreated, usuario)
+		utils.RespondWithJSON(c, http.StatusOK, updatedUsuario)
 	}
 }
-
 func DeleteUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
@@ -125,18 +130,17 @@ func DeleteUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 				c.JSON(http.StatusServiceUnavailable, gin.H{"status": "Error interno del servidor"})
 			}
 		}()
-		name := c.Query("name")
-		if !validators.IsValidText(name, 50) {
-			utils.RespondWithError(c, http.StatusBadRequest, "El nombre del usuario es obligatorio")
+		id := c.Param("id")
+		if id == "" {
+			utils.RespondWithError(c, http.StatusBadRequest, "El ID del usuario es obligatorio")
 			return
 		}
 		ctx := context.Background()
-		err := service.DAO.DeleteUsuario(ctx, name)
+		err := service.DeleteUsuario(ctx, id)
 		if err != nil {
-			utils.RespondWithError(c, http.StatusInternalServerError, "Error al actualizar el usuario o usuario no encontrado")
+			utils.RespondWithError(c, http.StatusNotFound, "Usuario no encontrado")
 			return
 		}
-
-		utils.RespondWithJSON(c, http.StatusCreated, "Usuario eliminado correctamente")
+		utils.RespondWithJSON(c, http.StatusOK, gin.H{"status": "Usuario eliminado"})
 	}
 }
