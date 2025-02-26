@@ -24,7 +24,10 @@ func (db *DB) InitDB() {
 	// Leer URI y nombre de BD desde las variables de entorno
 	mongoURI := os.Getenv("MONGO_URI")
 	dbName := os.Getenv("DB_NAME")
-
+	/*
+		mongoURI = "mongodb://localhost:27017/"
+		dbName = "RetoIronChip"
+	*/
 	if mongoURI == "" || dbName == "" {
 		log.Fatal("Faltan variables de entorno necesarias")
 	}
