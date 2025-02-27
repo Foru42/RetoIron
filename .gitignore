@@ -1,0 +1,46 @@
+# Archivos binarios generados
+/bin/
+/obj/
+
+# Archivos de dependencias
+/vendor/
+
+# Archivos de compilación de Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Archivos de dependencias de Go mod
+go.sum
+
+# Cache del compilador de Go
+*.out
+
+# Archivos de configuración específicos de IDE
+.vscode/
+.idea/
+*.iml
+
+# Archivos de configuración de editor
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Archivos de prueba de cobertura
+*.coverprofile
+
+# Archivos generados por Go test
+_test/
+
+# Archivos temporales del sistema
+.DS_Store   # macOS
+Thumbs.db   # Windows
+
+# Archivos y directorios de herramientas de desarrollo
+/.go_workspace
+/.go_modules
+/.vscode
+/.idea

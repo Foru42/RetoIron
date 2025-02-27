@@ -1,30 +1,107 @@
-# Backend
+# Reto: RESTful API en Golang
 
-Hola,
-Para poder seguir en el proceso de selección se ha encargado un reto a realizar para medir tus capacidades. El objetivo principal es medir tu proactividad frente a los obstáculos que se te ponen en el cual se valorarán diferentes puntos:
+## Descripción del Proyecto
+Este proyecto es una RESTful API desarrollada en **Golang** utilizando el framework **Gin** para la gestión de usuarios. La API permite realizar las operaciones básicas de CRUD (Create, Read, Update, Delete) sobre un modelo de datos `Usuario`, con campos como `name`, `surname`, y `email`. Los datos se almacenan en una base de datos MongoDb.
 
-    - Creatividad: Valoramos más la intención de como se quiere resolverlo más que el resultado en sí.
-    - Buena práctica de programación: Modelo Vista Controllador(MVC), código limpio y óptimo (en inglés), buen uso y declaración de variables y funciones etc.
-    - Documentación: Funcionalidad del proyecto y finalidad.
+### Características principales
+- **Operaciones CRUD completas**:
+  - GET: Obtener una lista de usuarios.
+  - POST: Crear un nuevo usuario con validación de datos.
+  - PUT: Actualizar un usuario existente.
+  - DELETE: Eliminar un usuario mediante su ID.
+- **Rate Limiting**: Limita las solicitudes a 10 por segundo para proteger contra ataques DoS.
+- **Validaciones**: Validación estricta de los datos de entrada (formato de correo electrónico, campos obligatorios, etc...).
+- **Persistencia**: Uso de MongoDb para almacenamiento ligero y seguro.
+- **Contenerización**: Configuración de Docker y Docker Compose para despliegue sencillo.
 
-## BASE
-Visual Studio Code -> Editor de código.
+---
 
-GIT -> Tencología de control de versiones.
-https://learngitbranching.js.org/
+## Requisitos Previos
+1. **Software necesario**:
+   - Docker y Docker Compose.
+   - Visual Studio Code o cualquier editor compatible con Golang.
+   - Golang 1.21 o superior.
 
-Golang -> Lenguaje de programación.
-https://go.dev/tour
+2. **Instalación de dependencias**:
+   - Todas las dependencias de Golang se manejan mediante `go mod`.
 
-Golang RESTful API -> Gin paquete básico para programar una API.
-https://go.dev/doc/tutorial/web-service-gin
+---
 
-## RETO
+## Instrucciones para Ejecutar el Proyecto
 
-El reto consiste en programar un RESTful API en Golang que hará una funcionalidad básica (GET, CREATE, UPDATE y DELETE) como por ejemplo con un modelo de datos de User(name,surname and email). Los usuarios serán almacenados en una base de datos que dejo a tú disposición elegir (te aconsejo SQLite, MySQL o MongoDB). 
+### 1. Clonar el repositorio
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_REPOSITORIO>
+```
 
-Este proyecto tiene que ir acompañado por un docker-compose que adjunta el proyecto de Golang con la base de datos elegida.
+### 2. Construir y ejecutar con Docker Compose
+```bash
+docker-compose up --build
+```
+Esto levantará el servicio en el puerto **8080**.
 
-Y por último, se analizarán las diferentes vulnerabilidades de la API y se va a proponer alguna solución para ello. Esta parte es más creativa ya que puede haber infinidad de casos como por ejemplo: para evitar ataques de Denegación se Servicio (DoS) se pretende adjuntar rate limits en los endpoints con el fin de limitar la cantidad de peticiones.
+### 3. Uso de la API
+Puedes interactuar con la API utilizando herramientas como `curl`, Postman, o cualquier cliente HTTP. Aquí algunos ejemplos:
 
-Suerte!
+#### **GET /usuarios**
+```bash
+curl -X GET http://localhost:8080/usuarios
+```
+#### **GETbyID /usuarios**
+```bash
+curl -X GET http://localhost:8080/usuarios/id
+```
+
+#### **POST /usuarios**
+```bash
+curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{"name":"Mokel", "surname":"Foruria", "email":"lol@gmail.com"}'
+```
+
+#### **PUT /usuarios**
+```bash
+curl -X PUT http://localhost:8080/usuarios/id -H "Content-Type: application/json" -d '{"name":"josul", "surname":"Smith", "email":"john.smith@example.com"}'
+```
+
+#### **DELETE /usuarios?id=1**
+```bash
+curl -X DELETE http://localhost:8080/usuarios/id
+
+```
+
+---
+
+## Estructura del Proyecto
+```
+RetoIronChip/
+├── src/
+│   ├── main.go            # Configuración principal del servidor
+│   ├── routes/            # Definición de rutas
+│   ├── controllers/       # Controladores para cada operación CRUD
+│   ├── models/            # Modelos de datos
+│   ├── database/          # Conexión y configuración de la base de 
+|   ├── utils/             # Estructura para los errores
+|   ├── validators/        # Validaciones 
+├── Dockerfile             # Configuración de Docker
+├── docker-compose.yml     # Configuración de Docker Compose
+├── .gitignore             # Configuración del ignore
+├── .env                   # Configuración de las variables de entorno
+```
+
+---
+
+## Medidas de Seguridad Implementadas
+1. **Rate Limiting**:
+   - Previene ataques de denegación de servicio (DoS) limitando las solicitudes a 10 por segundo.
+
+2. **Validación de Datos**:
+   - Verificación de formato de correo electrónico.
+   - Validación de campos obligatorios y longitud máxima de texto.
+
+3. **Errores Genéricos**:
+   - Mensajes de error diseñados para evitar revelar detalles internos.
+
+---
+
+## Autor
+**[Josu Foruria]**
