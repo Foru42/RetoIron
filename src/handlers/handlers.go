@@ -73,7 +73,7 @@ func PostUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 			return
 		}
 
-		if !validators.IsValidText(usuario.Name, 50) || !validators.IsValidText(usuario.Surname, 50) {
+		if !validators.IsValidText(usuario.Name) || !validators.IsValidText(usuario.Surname) {
 			utils.RespondWithError(c, http.StatusBadRequest, "Nombre y apellido deben tener menos de 50 caracteres")
 			return
 		}
@@ -108,7 +108,7 @@ func PutUsuario(service *controllers.UsuarioService) gin.HandlerFunc {
 			return
 		}
 
-		if !validators.IsValidEmail(usuario.Email) || !validators.IsValidText(usuario.Name, 50) || !validators.IsValidText(usuario.Surname, 50) {
+		if !validators.IsValidEmail(usuario.Email) || !validators.IsValidText(usuario.Name) || !validators.IsValidText(usuario.Surname) {
 			utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos")
 			return
 		}

@@ -1,6 +1,9 @@
 package validators
 
-import "regexp"
+import (
+	"josu-foruria/src/models"
+	"regexp"
+)
 
 // Valida que un email sea válido
 func IsValidEmail(email string) bool {
@@ -10,6 +13,6 @@ func IsValidEmail(email string) bool {
 }
 
 // Valida que un texto no esté vacío y no exceda cierta longitud
-func IsValidText(text string, maxLength int) bool {
-	return len(text) > 0 && len(text) <= maxLength
+func IsValidText(text string) bool {
+	return len(text) > 0 && len(text) <= models.USERNAME_MAX_LENGTH
 }
