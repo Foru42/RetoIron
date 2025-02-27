@@ -24,9 +24,7 @@ func (db *DB) InitDB() {
 	// Leer URI y nombre de BD desde las variables de entorno
 	mongoURI := os.Getenv("MONGO_URI")
 	dbName := os.Getenv("DB_NAME")
-
-	mongoURI = "mongodb://localhost:27017/"
-	dbName = "RetoIronChip"
+	colecName := os.Getenv("COLECTION_NAME")
 
 	if mongoURI == "" || dbName == "" {
 		log.Fatal("Faltan variables de entorno necesarias")
@@ -45,7 +43,7 @@ func (db *DB) InitDB() {
 
 	fmt.Println("Conectado a MongoDB")
 	db.Client = client
-	db.UsersCollection = client.Database(dbName).Collection("usuarios")
+	db.UsersCollection = client.Database(dbName).Collection(colecName)
 }
 
 func (db *DB) CloseDB() {
